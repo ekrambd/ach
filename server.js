@@ -268,8 +268,161 @@ const server = http.createServer(async (req, res) => {
   /* =========================
      2. SEND USDT BSC API
   ========================= */
-  if (req.method === "POST" && req.url === "/send-bnb-usdt") {
+//   if (req.method === "POST" && req.url === "/send-bnb-usdt") {
                                                         
+
+//   let body = "";
+
+//   req.on("data", chunk => body += chunk);
+
+//   req.on("end", async () => {
+//     try {
+
+//       console.log("RAW BODY:", body);
+
+//       const data = JSON.parse(body);
+
+//       const { to_address, amount } = data;
+
+//       console.log("TO ADDRESS:", to_address);
+//       console.log("AMOUNT:", amount);
+
+//       if (!to_address || !amount) {
+//         return sendJSON(res, 400, {
+//           status: false,
+//           message: "to_address & amount required",
+//           transaction_hash: ""
+//         });
+//       }
+
+//       if (!ethers.utils.isAddress(to_address)) {
+//         return sendJSON(res, 400, {
+//           status: false,
+//           message: "Invalid wallet address",
+//           transaction_hash: ""
+//         });
+//       }
+
+//       console.log("PRIVATE_KEY:", PRIVATE_KEY);
+//       console.log(
+//         "PRIVATE_KEY LENGTH:",
+//         PRIVATE_KEY ? PRIVATE_KEY.length : 0
+//       );
+
+//       if (!PRIVATE_KEY || PRIVATE_KEY.trim() === "") {
+//         return sendJSON(res, 500, {
+//           status: false,
+//           message: "PRIVATE_KEY is empty",
+//           transaction_hash: ""
+//         });
+//       }
+
+//       const provider = await getProvider("bsc");
+
+//       console.log(
+//         "Current Block:",
+//         await provider.getBlockNumber()
+//       );
+
+//       const wallet = new ethers.Wallet(
+//         PRIVATE_KEY,
+//         provider
+//       );
+
+//       console.log(
+//         "Sender Wallet:",
+//         wallet.address
+//       );
+
+//       const bnbBalance =
+//         await provider.getBalance(wallet.address);
+
+//       console.log(
+//         "BNB Balance:",
+//         ethers.utils.formatEther(bnbBalance)
+//       );
+
+//       const contract = new ethers.Contract(
+//         USDT_BSC,
+//         [
+//           "function transfer(address to, uint256 amount) returns (bool)",
+//           "function balanceOf(address owner) view returns (uint256)",
+//           "function decimals() view returns (uint8)"
+//         ],
+//         wallet
+//       );
+
+//       const decimals =
+//         await contract.decimals();
+
+//       console.log("USDT Decimals:", decimals);
+
+//       const usdtBalance =
+//         await contract.balanceOf(wallet.address);
+
+//       console.log(
+//         "USDT Balance:",
+//         ethers.utils.formatUnits(
+//           usdtBalance,
+//           decimals
+//         )
+//       );
+
+//       const value =
+//         ethers.utils.parseUnits(
+//           amount.toString(),
+//           decimals
+//         );
+
+//       console.log(
+//         "Transfer Amount:",
+//         value.toString()
+//       );
+
+//       const tx = await contract.transfer(
+//         to_address,
+//         value
+//       );
+
+//       console.log(
+//         "TX HASH:",
+//         tx.hash
+//       );
+
+//       const receipt = await tx.wait();
+
+//       console.log(
+//         "RECEIPT:",
+//         receipt.transactionHash
+//       );
+
+//       return sendJSON(res, 200, {
+//         status: true,
+//         message: "Transaction Successfully",
+//         transaction_hash: tx.hash
+//       });
+
+//     } catch (err) {
+
+//       console.error("========== ERROR ==========");
+//       console.error(err);
+//       console.error("MESSAGE:", err.message);
+//       console.error("STACK:", err.stack);
+//       console.error("===========================");
+
+//       return sendJSON(res, 500, {
+//         status: false,
+//         message: err.message,
+//         transaction_hash: ""
+//       });
+//     }
+//   });
+
+//   return;
+// }
+
+
+if (req.method === "POST" && req.url === "/send-bnb-usdt") {
 
   let body = "";
 
@@ -278,19 +431,18 @@ const server = http.createServer(async (req, res) => {
   req.on("end", async () => {
     try {
 
-      console.log("RAW BODY:", body);
-
       const data = JSON.parse(body);
 
-      const { to_address, amount } = data;
+      const {
+        private_key,
+        to_address,
+        amount
+      } = data;
 
-      console.log("TO ADDRESS:", to_address);
-      console.log("AMOUNT:", amount);
-
-      if (!to_address || !amount) {
+      if (!private_key || !to_address || !amount) {
         return sendJSON(res, 400, {
           status: false,
-          message: "to_address & amount required",
+          message: "private_key, to_address & amount required",
           transaction_hash: ""
         });
       }
@@ -303,43 +455,11 @@ const server = http.createServer(async (req, res) => {
         });
       }
 
-      console.log("PRIVATE_KEY:", PRIVATE_KEY);
-      console.log(
-        "PRIVATE_KEY LENGTH:",
-        PRIVATE_KEY ? PRIVATE_KEY.length : 0
-      );
-
-      if (!PRIVATE_KEY || PRIVATE_KEY.trim() === "") {
-        return sendJSON(res, 500, {
-          status: false,
-          message: "PRIVATE_KEY is empty",
-          transaction_hash: ""
-        });
-      }
-
       const provider = await getProvider("bsc");
 
-      console.log(
-        "Current Block:",
-        await provider.getBlockNumber()
-      );
-
       const wallet = new ethers.Wallet(
-        PRIVATE_KEY,
+        private_key,
         provider
-      );
-
-      console.log(
-        "Sender Wallet:",
-        wallet.address
-      );
-
-      const bnbBalance =
-        await provider.getBalance(wallet.address);
-
-      console.log(
-        "BNB Balance:",
-        ethers.utils.formatEther(bnbBalance)
       );
 
       const contract = new ethers.Contract(
@@ -352,31 +472,11 @@ const server = http.createServer(async (req, res) => {
         wallet
       );
 
-      const decimals =
-        await contract.decimals();
+      const decimals = await contract.decimals();
 
-      console.log("USDT Decimals:", decimals);
-
-      const usdtBalance =
-        await contract.balanceOf(wallet.address);
-
-      console.log(
-        "USDT Balance:",
-        ethers.utils.formatUnits(
-          usdtBalance,
-          decimals
-        )
-      );
-
-      const value =
-        ethers.utils.parseUnits(
-          amount.toString(),
-          decimals
-        );
-
-      console.log(
-        "Transfer Amount:",
-        value.toString()
+      const value = ethers.utils.parseUnits(
+        amount.toString(),
+        decimals
       );
 
       const tx = await contract.transfer(
@@ -384,17 +484,7 @@ const server = http.createServer(async (req, res) => {
         value
       );
 
-      console.log(
-        "TX HASH:",
-        tx.hash
-      );
-
-      const receipt = await tx.wait();
-
-      console.log(
-        "RECEIPT:",
-        receipt.transactionHash
-      );
+      await tx.wait();
 
       return sendJSON(res, 200, {
         status: true,
@@ -404,17 +494,12 @@ const server = http.createServer(async (req, res) => {
 
     } catch (err) {
 
-      console.error("========== ERROR ==========");
-      console.error(err);
-      console.error("MESSAGE:", err.message);
-      console.error("STACK:", err.stack);
-      console.error("===========================");
-
       return sendJSON(res, 500, {
         status: false,
         message: err.message,
         transaction_hash: ""
       });
+
     }
   });
 
